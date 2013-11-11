@@ -25,20 +25,23 @@ CreepObj.prototype.getGender = function() {
 	}
 };
 
+// return 1,2,3 depdening on random value and defined outcome ranges
+CreepObj.prototype._random123 = function() {
+	var randomVal = Math.random();
+
+	if(randomVal < 0.15){
+		return 0;
+	} else if (randomVal < 0.8) {
+		return 1;
+	} else {
+		return 2;
+	}
+};
+
 CreepObj.prototype.getStepStyle = function() {
 	//set step style, will act as multiplier while moving (0x, 1x, 2x; some creeps cant move at all, some only on one axis etc.)
-	function random123(randval) {
-		if(randval < 0.15){
-			return 0;
-		} else if (randval < 0.8) {
-			return 1;
-		} else {
-			return 2;
-		}
-	}
-	
-	this.stepX = random123(Math.random());
-	this.stepY = random123(Math.random());
+	this.stepX = this._random123();
+	this.stepY = this._random123();
 };
 
 CreepObj.prototype.getColor = function() {
