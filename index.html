@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="description" content="microEvolution.js" />
+	<meta name="keywords" content="html5, canvas, evolution, microevolution" />
+	<meta name="author" content="Florian Hinze" />
+	<meta charset="UTF-8" />
+    <link rel="stylesheet" type="text/css" href="styles/styles.css"/>
+    <script type="text/javascript" src="GameController.js"></script>
+</head>
+<body>
+<header>
+    <!-- page heading -->
+</header>
+
+<nav>
+</nav>
+
+<section>
+	<div id="canvasContainer">
+		<canvas height="600" width="800" id="canvas"></canvas>
+		<canvas height="600" width="800" id="quadCanvas"></canvas>
+		<div id="copyContainer">
+			<input type="checkbox"  id="showQuadCheck" /> Show QuadTree Boundaries
+			<span id="countLinks">Creeps : <a href="index.html?count=25">25</a> | 
+				<a href="index.html?count=75">75</a> | 
+				<a href="index.html?count=200">200</a> | 
+				<a href="index.html?count=400">400</a>
+			</span>
+			<article>
+				<h3>microEvolution.js</h3>
+				<p>A tiny evolution simulation - using QuadTree and separate axis theorem algorithms for collision detection - visualized with Canvas.</p>
+				<p>Utilizes simplified genetics to incorporate mutations on creep propagation.</p>
+				<h4>Features</h4>
+				<ul>
+					<li>Creeps of different genders (blue: male, pink: female) spawn with individual properties (movement pattern, energy pool, ...)</li>
+					<li>Creeps consume energy each day to stay alive and die if none is left</li>
+					<li>Dead creeps (grey) decay after a few days</li>
+					<li>Food (green) spawns every month and adds energy to a creep if picked up</li>
+					<li>If creeps meet there is a chance for them to interact depending on gender: 
+						<p><b>male / male</b> - cost: 20 - creeps may fight (one absorbs all energy of the other)</p>
+						<p><b>male / female</b> - cost: 20 - female may be fertilized and create a new creep - if old enough (both parents pass half their energy to the child) </li></p>
+				</ul>
+			</article>
+		</div>
+	<div>
+	<aside id="left">
+		<h4>Statistics</h4>
+		<p><div>Day (Creep Tick)</div><span id="day">0</span></p>
+		<p><div>Month (Food Tick)</div><span id="month">0</span></p>
+		<hr>
+		<p><div>Alive</div><span id="alive">0</span></p>
+		<p><div>Dead</div><span id="dead">0</span></p>
+		<hr>
+		<p><div>Male</div><span id="male">0</span></p>
+		<p><div>Female</div><span id="female">0</span></p>
+		<hr>
+		<p><div>Age (max)</div><span id="age_max">0</span></p>
+		<p><div>Age (avg)</div><span id="age_avg">0</span></p>
+		<p><div>Generation (max)</div><span id="gen_max">0</span></p>		
+	</aside>
+	<aside id="right">
+		<h4>Mutations - Movement</h4>
+		<p>
+			<table>
+				<thead>
+					<td>X</td>
+					<td>Y</td>
+				</thead>
+				<tbody>
+					<tr><td>0</td><td>0</td></tr>
+					<tr><td>0</td><td>1</td></tr>
+					<tr><td>0</td><td>2</td></tr>
+					<tr><td>1</td><td>0</td></tr>
+					<tr><td>1</td><td>1</td></tr>
+					<tr><td>1</td><td>2</td></tr>
+					<tr><td>2</td><td>0</td></tr>
+					<tr><td>2</td><td>1</td></tr>
+					<tr><td>2</td><td>2</td></tr>
+				</tbody>
+			</table>
+		</p>
+	</aside>
+</section>
+<footer>
+    <!-- Page Footer-->
+</footer>
+</body>
+<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+<script>
+	init();
+</script>
+</html>
