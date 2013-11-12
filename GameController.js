@@ -215,7 +215,7 @@ function logicUpdate() {
 			creeps[i].color = deadColor;
 			creeps[i].isAlive = 0;
 
-			console.log(creeps[i].id,':died');
+			// console.log(creeps[i].id,':died');
 			//update stats
 			statsElements.dead.html(++statsCounter.dead);
 			statsElements.alive.html(--statsCounter.alive);
@@ -226,7 +226,7 @@ function logicUpdate() {
 			if(boxIntersectCheck(creepBox, foodBox)){
 				creeps[i].energy += food.energy;
 				food.isAlive = 0;
-				console.log(creeps[i].id,':gotFood');
+				// console.log(creeps[i].id,':gotFood');
 			}
 		}
 
@@ -250,6 +250,9 @@ function logicUpdate() {
 		var collidingCreep;
 
 		if(creeps[i].isAlive && !creeps[i].isFertilized) {
+			//build lookup table to find creeps by id
+			var creepLookupTable = buildLookupTable(creeps);
+
 			//loop through all creeps in the node/subnode and perform collision detection
 			for(var j = 0; j < len; j++) {
 				var item = quadItems[j];
@@ -261,9 +264,9 @@ function logicUpdate() {
 
 				var itemBox = [item.x, item.y, item.x + item.width, item.y + item.height];
 				
-				//check for collision / did creeps in this node overlap?
+				// check for collision / did creeps in this node overlap?
 				if(boxIntersectCheck(creepBox, itemBox)) {
-					collidingCreep = findById(creeps, item.id);
+					collidingCreep = creepLookupTable[item.id];
 					creeps[i].isCollidingWith = collidingCreep.id;
 					
 					//check if the colliding creeps is dead already
@@ -288,11 +291,11 @@ function logicUpdate() {
 				if(Math.random() < 0.5) {
 					collidingCreep.energy += (creeps[i].energy - fightEnergyCost); 
 					creeps[i].energy = 0;
-					console.log(creeps[i].id,':eliminated');
+					// console.log(creeps[i].id,':eliminated');
 				} else {
 					creeps[i].energy += (collidingCreep.energy - fightEnergyCost);
 					collidingCreep.energy = 0;
-					console.log(collidingCreep.id,':eliminated');
+					// console.log(collidingCreep.id,':eliminated');
 				}
 			}
 		} else if (encounter == 'mw') { //male/female encounter, chance of making the female pregnant
@@ -305,7 +308,7 @@ function logicUpdate() {
 					creeps[i].energy = creeps[i].energy / 2;
 					generation = creeps[i].generation + 1;
 
-					console.log(creeps[i].id,':fertilized');
+					// console.log(creeps[i].id,':fertilized');
 				} else if (( creeps[i].gender === 1 && collidingCreep.gender === 0 ) && collidingCreep.isFertilized === 0 && (creeps[i].age >= fertileAge && collidingCreep.age >= fertileAge)) {
 					//collidingCreep is the female, make it pregnant
 					collidingCreep.isFertilized = 1;
@@ -313,13 +316,13 @@ function logicUpdate() {
 					collidingCreep.energy = collidingCreep.energy / 2;
 					generation = collidingCreep.generation + 1;
 
-					console.log(collidingCreep.id,':fertilized');
+					// console.log(collidingCreep.id,':fertilized');
 				}
 
 				//generate a new creep and let it start with an energy pool chopped of its parents
 				var newCreep = generateCreeps(1, generation, Math.floor(creeps[i].energy + collidingCreep.energy) - birthEnergyCost);
 				creeps.push(newCreep[0]);
-				console.log(newCreep[0].id,':born');
+				// console.log(newCreep[0].id,':born');
 			}
 		}
 
@@ -454,9 +457,25 @@ function boxIntersectCheck(a,b)
 //search for element in array by iD
 function findById(source, id) 
 {
-    return source.filter(function( obj ) {
-        // coerce both obj.id and id to numbers 
-        // for val & type comparison
-        return +obj.id === +id;
-    })[ 0 ];
+    // return source.filter(function( obj ) {
+    //     // coerce both obj.id and id to numbers 
+    //     // for val & type comparison
+    //     return +obj.id === +id;
+    // })[ 0 ];
+
+	return $.grep(source, function(e) {
+	  	return e.id == id;
+	})[0];
+
+	// return found;
+}
+
+
+
+function buildLookupTable(arr) {
+	var lookup = {};
+	for (var i = 0, c = arr.length; i < c; i++) {
+	    lookup[arr[i].id] = arr[i];
+	}
+	return lookup;
 }

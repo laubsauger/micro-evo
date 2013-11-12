@@ -54,7 +54,7 @@ CreepObj.prototype.getColor = function() {
 
 CreepObj.prototype.move = function() {
 	//determine if creep will move
-	if(Math.random() < 0.3) {
+	if(Math.random() < 0.5) {
 		//determin axis on which to move
 		if(Math.random() > 0.5) {
 		//x
@@ -84,6 +84,7 @@ CreepObj.prototype.move = function() {
 				//check for border collision
 				if(this.posY + CREEP_SIZE * this.stepY > CHEIGHT - CREEP_SIZE){
 					//hit right Y border - not moving
+					this.posY -= CREEP_SIZE * this.stepY;
 				} else {
 					this.posY += CREEP_SIZE * this.stepY;
 				}
@@ -92,6 +93,7 @@ CreepObj.prototype.move = function() {
 				//check for border collision
 				if(this.posY - CREEP_SIZE * this.stepY < 0){
 					//hit left Y border - not moving
+					this.posY += CREEP_SIZE * this.stepY;
 				} else {
 					this.posY -= CREEP_SIZE * this.stepY;
 				}
