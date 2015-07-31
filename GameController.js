@@ -1,4 +1,5 @@
-"use strict"
+"use strict";
+
 //game
 document.write('<script type="text/javascript" src="CreepObj.js"></script>');
 document.write('<script type="text/javascript" src="FoodObj.js"></script>');
@@ -11,8 +12,8 @@ document.write('<script type="text/javascript" src="quadTree/easel.js"></script>
 
 var canvas,
     ctx,
-    CHEIGHT,
-    CWIDTH,
+    canvasHeight,
+    canvasWidth,
     CREEP_SIZE = 8,
     FOOD_SIZE = 10,
     creeps = [],
@@ -21,9 +22,9 @@ var canvas,
     maleColor = '#27AEEF',
     deadColor = '#414141',
     foodColor = '#37FF2D',
-    creepTickLength = 10, //number of frames per creepTick
+    creepTickLength = 30, //number of frames per creepTick
     creepTicks = 0,
-    foodTickLength = 10, //number of creepTicks per foodTick
+    foodTickLength = 30, //number of creepTicks per foodTick
     foodTicks = 0,
     ticksToVanish = (foodTickLength * creepTickLength) * 2,
     food,
@@ -48,8 +49,8 @@ function init() {
     quadStage = new Stage(quadCanvas);
     canvas = document.getElementById("canvas");  //actual game canvas
     ctx = canvas.getContext("2d");
-    CHEIGHT = canvas.height;
-    CWIDTH = canvas.width;
+    canvasHeight = canvas.height;
+    canvasWidth = canvas.width;
 
     var check = document.getElementById("showQuadCheck");
     check.onclick = function (e) {
@@ -100,9 +101,6 @@ function init() {
         }
     };
 
-    // create Stats dom elements
-
-
     //fetch stats DOM elements
     statsElements = {
         day: $('aside #day'),
@@ -128,7 +126,7 @@ function generateCreeps(count, generation, energy) {
     var creepArr = [];
 
     for (var i = 0; i < count; i++) {
-        creepArr[i] = new CreepObj(nextId, randomXToY(0, CWIDTH - CREEP_SIZE), randomXToY(0, CHEIGHT - CREEP_SIZE));
+        creepArr[i] = new CreepObj(nextId, randomXToY(0, canvasWidth - CREEP_SIZE), randomXToY(0, canvasHeight - CREEP_SIZE));
         creepArr[i].getGender();
         creepArr[i].getColor();
         creepArr[i].getStepStyle();
@@ -137,8 +135,6 @@ function generateCreeps(count, generation, energy) {
 
         nextId++;
     }
-
-    statsCounter.alive = creepArr.length;
 
     return creepArr;
 }
@@ -161,7 +157,7 @@ function gameLoaded() {
 }
 
 function gameUpdate() {
-    if (creeps.length) {
+    if (creeps.length > 0) {
         //draw
         draw();
 
@@ -291,6 +287,9 @@ function logicUpdate() {
             }
         }
 
+        if (encounter == false) {
+            continue;
+        }
 
         //check for type of encounter
         if (encounter == 'mm') { //if two males meet there is a chane that one of them (50/50) gets ripped its energy by the other
@@ -333,7 +332,7 @@ function logicUpdate() {
             }
         }
 
-        encounter = '';
+        encounter = false;
     }
 
     if (showOverlay) {
@@ -349,7 +348,8 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     var numberOfMales = 0,
-        numberOfFemales = 0;
+        numberOfFemales = 0,
+        averageAge = 0;
 
     //draw creeps
     for (var i = 0; i < creeps.length; i++) {
@@ -373,15 +373,16 @@ function draw() {
             }
 
             // age
-            statsCounter.age.avg += creeps[i].age;
+            averageAge += creeps[i].age;
             (statsCounter.gen_max < creeps[i].generation) ? statsCounter.gen_max = creeps[i].generation : false;
             (statsCounter.age.max < creeps[i].age) ? statsCounter.age.max = creeps[i].age : false;
         }
     }
 
+    statsCounter.alive = creeps.length;
     statsCounter.gender.numberOfMales = numberOfMales;
     statsCounter.gender.numberOfFemales = numberOfFemales;
-    statsCounter.age.avg = statsCounter.age.avg / (statsCounter.gender.numberOfMales + statsCounter.gender.numberOfFemales);
+    statsCounter.age.avg = averageAge / (statsCounter.gender.numberOfMales + statsCounter.gender.numberOfFemales);
 
     //update stats view
     statsElements.male.html(statsCounter.gender.numberOfMales);

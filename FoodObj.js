@@ -13,6 +13,6 @@ function FoodObj() {
 
 FoodObj.prototype.spawn = function () {
     this.isAlive = 1;
-    this.posX = randomXToY(0, CWIDTH - FOOD_SIZE);
-    this.posY = randomXToY(0, CHEIGHT - FOOD_SIZE);
+    this.posX = randomXToY(0, canvasWidth - FOOD_SIZE);
+    this.posY = randomXToY(0, canvasHeight - FOOD_SIZE);
 };
