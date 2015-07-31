@@ -1,21 +1,20 @@
-function CreepObj (id, x, y) {
+function CreepObj(id, x, y) {
 	this.id     = id;
 	this.age    = 0;
 	this.energy = randomXToY(energyRangeA,energyRangeB);
 	this.posX   = x;
 	this.posY   = y;
-	this.draw 	= doDraw;
 	this.isAlive = 1;
 	this.ticksSinceDeath = 0;
 	this.isCollidingWith = 0;
 	this.isFertilized = 0;
 	this.generation = 0;
 
-	function doDraw () {
+    this.draw = function() {
 		ctx.fillStyle = this.color;
 		ctx.fillRect(this.posX, this.posY, CREEP_SIZE, CREEP_SIZE); 
 	}
-};
+}
 
 CreepObj.prototype.getGender = function() {
 	if(Math.random() > 0.50){
