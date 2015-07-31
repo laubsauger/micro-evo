@@ -177,7 +177,10 @@ function gameUpdate() {
 }
 
 function logicUpdate() {
+    var isNewDay = false;
+
     quadTree.clear();
+    creepTicks++;
 
     //check if a creep tick has passed
     if (creepTicks >= creepTickLength) {
@@ -186,6 +189,14 @@ function logicUpdate() {
         //update stats + 1 day
         statsCounter.day++;
         creepTicks = 0;
+        isNewDay = true;
+    }
+
+    // animate creep position towards target
+        // apply collision logic (creeps, food, walls)
+
+    if (!isNewDay) {
+        return;
     }
 
     //update food position every food tick
@@ -202,18 +213,20 @@ function logicUpdate() {
 
     //update creep data
     for (var i = 0; i < creeps.length; i++) {
-        if (creeps[i].energy > 0) {
-            creeps[i].move();
+        var creep = creeps[i];
+
+        if (creep.energy > 0) {
+            creep.move();
 
             //update age and energy every creep tick
             if (creepTicks === 0) {
-                creeps[i].age++;
-                creeps[i].energy--;
+                creep.age++;
+                creep.energy--;
             }
 
-        } else if (creeps[i].isAlive === 1) {
-            creeps[i].color = deadColor;
-            creeps[i].isAlive = 0;
+        } else if (creep.isAlive === 1) {
+            creep.color = deadColor;
+            creep.isAlive = 0;
 
             // console.log(creeps[i].id,':died');
             //update stats
@@ -224,28 +237,28 @@ function logicUpdate() {
         if (food.isAlive === 1) {
             //check for collision / did creep box overlapped the food box?
             if (boxIntersectCheck(creepBox, foodBox)) {
-                creeps[i].energy += food.energy;
+                creep.energy += food.energy;
                 food.isAlive = 0;
                 // console.log(creeps[i].id,':gotFood');
             }
         }
 
-        //insert creep position to quadTree
+        //add creep to quadTree
         quadTree.insert({
-            x: creeps[i].posX,
-            y: creeps[i].posY,
+            x: creep.posX,
+            y: creep.posY,
             height: CREEP_SIZE,
             width: CREEP_SIZE,
-            id: creeps[i].id
+            id: creep.id
         });
 
         //get creep bounding box for collision detection
-        creepBox = [creeps[i].posX, creeps[i].posY, creeps[i].posX + CREEP_SIZE, creeps[i].posY + CREEP_SIZE];
+        creepBox = [creep.posX, creep.posY, creep.posX + CREEP_SIZE, creep.posY + CREEP_SIZE];
 
         //check creeps on this position in quadTree
         var quadItems = quadTree.retrieve({
-            x: creeps[i].posX,
-            y: creeps[i].posY,
+            x: creep.posX,
+            y: creep.posY,
             height: CREEP_SIZE,
             width: CREEP_SIZE
         });
@@ -253,7 +266,7 @@ function logicUpdate() {
         var encounter;
         var collidingCreep;
 
-        if (creeps[i].isAlive && !creeps[i].isFertilized) {
+        if (creep.isAlive && !creep.isFertilized) {
             //build lookup table to find creeps by id
             var creepLookupTable = buildLookupTable(creeps);
 
@@ -261,7 +274,7 @@ function logicUpdate() {
             for (var j = 0; j < len; j++) {
                 var item = quadItems[j];
 
-                if (creeps[i].id == item.id || creeps[i].isCollidingWith == item.id) {
+                if (creep.id == item.id || creep.isCollidingWith == item.id) {
                     continue;
                 }
 
@@ -270,16 +283,16 @@ function logicUpdate() {
                 // check for collision / did creeps in this node overlap?
                 if (boxIntersectCheck(creepBox, itemBox)) {
                     collidingCreep = creepLookupTable[item.id];
-                    creeps[i].isCollidingWith = collidingCreep.id;
+                    creep.isCollidingWith = collidingCreep.id;
 
                     //check if the colliding creeps is dead already
                     if (!collidingCreep.isAlive) {
                         //dead creep involved, do nothing for now
                     } else {
                         //check if collision between two males
-                        if (creeps[i].gender === 1 && collidingCreep.gender === 1) {
+                        if (creep.gender === 1 && collidingCreep.gender === 1) {
                             encounter = 'mm';
-                        } else if (creeps[i].gender !== collidingCreep.gender) {
+                        } else if (creep.gender !== collidingCreep.gender) {
                             encounter = 'mw';
                         }
                     }
@@ -295,11 +308,11 @@ function logicUpdate() {
         if (encounter == 'mm') { //if two males meet there is a chane that one of them (50/50) gets ripped its energy by the other
             if (Math.random() < 0.1) {
                 if (Math.random() < 0.5) {
-                    collidingCreep.energy += (creeps[i].energy - fightEnergyCost);
-                    creeps[i].energy = 0;
+                    collidingCreep.energy += (creep.energy - fightEnergyCost);
+                    creep.energy = 0;
                     // console.log(creeps[i].id,':eliminated');
                 } else {
-                    creeps[i].energy += (collidingCreep.energy - fightEnergyCost);
+                    creep.energy += (collidingCreep.energy - fightEnergyCost);
                     collidingCreep.energy = 0;
                     // console.log(collidingCreep.id,':eliminated');
                 }
@@ -307,15 +320,15 @@ function logicUpdate() {
         } else if (encounter == 'mw') { //male/female encounter, chance of making the female pregnant
             var generation;
             if (Math.random() < 0.1) {
-                if (( creeps[i].gender === 0 && collidingCreep.gender === 1 ) && creeps[i].isFertilized === 0 && (creeps[i].age >= fertileAge && collidingCreep.age >= fertileAge)) {
+                if (( creep.gender === 0 && collidingCreep.gender === 1 ) && creep.isFertilized === 0 && (creep.age >= fertileAge && collidingCreep.age >= fertileAge)) {
                     //creeps[i] is the female, make it pregnant
-                    creeps[i].isFertilized = 1;
+                    creep.isFertilized = 1;
                     //reduce energy (will be passed to child)
-                    creeps[i].energy = creeps[i].energy / 2;
-                    generation = creeps[i].generation + 1;
+                    creep.energy = creep.energy / 2;
+                    generation = creep.generation + 1;
 
                     // console.log(creeps[i].id,':fertilized');
-                } else if (( creeps[i].gender === 1 && collidingCreep.gender === 0 ) && collidingCreep.isFertilized === 0 && (creeps[i].age >= fertileAge && collidingCreep.age >= fertileAge)) {
+                } else if (( creep.gender === 1 && collidingCreep.gender === 0 ) && collidingCreep.isFertilized === 0 && (creep.age >= fertileAge && collidingCreep.age >= fertileAge)) {
                     //collidingCreep is the female, make it pregnant
                     collidingCreep.isFertilized = 1;
                     //reduce energy (will be passed to child)
@@ -326,7 +339,7 @@ function logicUpdate() {
                 }
 
                 //generate a new creep and let it start with an energy pool chopped of its parents
-                var newCreep = generateCreeps(1, generation, Math.floor(creeps[i].energy + collidingCreep.energy) - birthEnergyCost);
+                var newCreep = generateCreeps(1, generation, Math.floor(creep.energy + collidingCreep.energy) - birthEnergyCost);
                 creeps.push(newCreep[0]);
                 // console.log(newCreep[0].id,':born');
             }
@@ -339,8 +352,6 @@ function logicUpdate() {
         renderQuadTreeOverlay();
         quadStage.update();
     }
-
-    creepTicks++;
 }
 
 function draw() {
@@ -363,7 +374,6 @@ function draw() {
             }
         } else {
             creeps[i].draw();
-
             // grab a few stats
             // determine gender - isMale?
             if (creeps[i].gender) {
@@ -379,7 +389,7 @@ function draw() {
         }
     }
 
-    statsCounter.alive = creeps.length;
+    statsCounter.alive = numberOfMales + numberOfFemales;
     statsCounter.gender.numberOfMales = numberOfMales;
     statsCounter.gender.numberOfFemales = numberOfFemales;
     statsCounter.age.avg = averageAge / (statsCounter.gender.numberOfMales + statsCounter.gender.numberOfFemales);
